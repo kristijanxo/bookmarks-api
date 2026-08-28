@@ -5,13 +5,13 @@ import { AuthService } from './auth.service.js';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('signup')
-  signup() {
-    return 'i am signed up';
+  @Post('sign-up')
+  signUp() {
+    return this.authService.signUp();
   }
 
-  @Post('signin')
-  signin() {
-    return 'i am signed in';
+  @Post('sign-in')
+  signIn() {
+    return this.authService.signIn();
   }
 }
