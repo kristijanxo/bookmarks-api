@@ -1,0 +1,42 @@
+// use prisma-next
+
+// model User {
+//   id        Int      @id @default(autoincrement())
+//   email     String   @unique
+//   username  String?
+//   name      String?
+//   posts     Post[]
+//   createdAt TimestamptzString @default(now())
+//   updatedAt temporal.updatedAtString()
+// }
+//
+// model Post {
+//   id        Int      @id @default(autoincrement())
+//   title     String
+//   content   String?
+//   author    User     @relation(fields: [authorId], references: [id])
+//   authorId  Int
+//   createdAt TimestamptzString @default(now())
+//   updatedAt temporal.updatedAtString()
+// }
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  hash      String
+  firstName String?
+  lastname  String?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+  }
+
+model Bookmark {
+  id            Int       @id @default(autoincrement())
+  title         String
+  descrtiption  String?
+  url           String
+
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+  }
