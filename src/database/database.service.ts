@@ -3,5 +3,5 @@ import { db } from '../prisma/db.js';
 
 @Injectable()
 export class DatabaseService {
-  client = db;
+  db = db;
 }
