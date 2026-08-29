@@ -3,70 +3,126 @@
 ## Docker / PostgreSQL
 
 ```bash
-# Start PostgreSQL in background
+# Start database
 docker compose up -d
 
 # Check containers
 docker compose ps
 
-# View PostgreSQL logs
+# PostgreSQL logs
 docker compose logs -f postgres
 
-# Stop containers — KEEP database data
+# Stop containers — database data stays
 docker compose down
 
-# Stop containers AND DELETE database data ⚠️
+# ⚠️ Stop containers AND DELETE database data
 docker compose down -v
-```
-
-After deleting the volume:
-
-```bash
-docker compose up -d
 ```
 
 ---
 
-# Prisma 8 Basic Flow
+# NestJS CLI
 
-Schema file:
+## Generate module
+
+```bash
+nest g module auth
+```
+
+Creates:
+
+```text
+auth/auth.module.ts
+```
+
+## Generate controller
+
+```bash
+nest g controller auth
+```
+
+Short form:
+
+```bash
+nest g co auth
+```
+
+## Generate service
+
+```bash
+nest g service auth
+```
+
+Short form:
+
+```bash
+nest g s auth
+```
+
+## Generate complete resource
+
+```bash
+nest g resource users
+```
+
+Can generate module, controller, service, DTOs, etc.
+
+## Other useful generators
+
+```bash
+nest g guard auth
+nest g decorator user
+nest g pipe validation
+nest g interceptor logging
+nest g middleware logger
+```
+
+See all generators:
+
+```bash
+nest g --help
+```
+
+---
+
+# Prisma 8
+
+Main schema:
 
 ```text
 src/prisma/contract.prisma
 ```
 
-Normal development flow:
+## Normal workflow
 
 ```text
-edit contract.prisma
+Edit contract.prisma
         ↓
 contract emit
         ↓
 migration plan
         ↓
-review migration
-        ↓
 db migrate
 ```
 
-## 1. Generate contract/types
-
-After changing `contract.prisma`:
+### 1. Generate contract + TypeScript types
 
 ```bash
 yarn prisma contract emit
 ```
 
-Generates/updates:
+Updates things such as:
 
 ```text
 contract.json
 contract.d.ts
 ```
 
+Run this whenever you change `contract.prisma`.
+
 ---
 
-## 2. Create a migration
+### 2. Create migration
 
 ```bash
 yarn prisma migration plan --name add-bookmarks
@@ -77,49 +133,56 @@ Examples:
 ```bash
 yarn prisma migration plan --name init
 yarn prisma migration plan --name add-user
-yarn prisma migration plan --name add-bookmark-description
+yarn prisma migration plan --name add-description
 ```
 
-This creates migration files but **does not change the database yet**.
+This **creates the migration but does not apply it**.
 
 ---
 
-## 3. Apply pending migrations
+### 3. Apply migration
 
 ```bash
 yarn prisma db migrate --advance-ref db
 ```
 
-This changes the database and moves the `db` reference forward.
+This changes the actual PostgreSQL database.
 
-Use this for normal development so the next migration contains only the **new changes**.
+`--advance-ref db` remembers that the database is now at this migration, so future migrations contain only newer changes.
 
 ---
 
-# Normal Schema Change
+# Typical Schema Change
 
-Example: add a field to `User`.
+Edit:
 
-```prisma
-model User {
-  // ...
-  username String?
-}
+```text
+src/prisma/contract.prisma
 ```
 
 Then:
 
 ```bash
 yarn prisma contract emit
-yarn prisma migration plan --name add-username
+
+yarn prisma migration plan --name add-user-field
+
 yarn prisma db migrate --advance-ref db
 ```
 
-Existing data is **not automatically deleted**. Prisma applies the required schema change.
+This is the normal safe workflow.
+
+It does **not** wipe the whole database.
 
 ---
 
-# Useful Checks
+# Check Database
+
+## Verify contract matches database
+
+```bash
+yarn prisma db verify
+```
 
 ## Migration status
 
@@ -127,97 +190,131 @@ Existing data is **not automatically deleted**. Prisma applies the required sche
 yarn prisma migration status
 ```
 
-Shows applied and pending migrations.
-
-## Check database matches contract
-
-```bash
-yarn prisma db verify
-```
-
-## See migrations
+## List migrations
 
 ```bash
 yarn prisma migration list
 ```
 
-## Inspect a migration
+---
+
+# Inspect PostgreSQL Manually
+
+Open PostgreSQL shell:
 
 ```bash
-yarn prisma migration show <migration-name>
+docker exec -it nest-postgres psql -U postgres -d nestdb
+```
+
+List tables:
+
+```text
+\dt
+```
+
+Inspect table:
+
+```text
+\d "User"
+```
+
+```text
+\d "Bookmark"
+```
+
+Exit:
+
+```text
+\q
 ```
 
 ---
 
-# Quick Local Changes Without Migration Files
+# Prisma Studio
 
-For experimentation:
+Prisma 8 currently does not contain the `studio` command.
+
+The standalone Studio is currently launched through Prisma 7.
+
+Because Prisma 7 cannot parse the Prisma 8 `prisma.config.ts`, run it **outside the project directory**:
 
 ```bash
-yarn prisma contract emit
+cd /tmp
+
+yarn dlx prisma@7.10.0 studio --url="postgresql://postgres:postgres@localhost:5432/nestdb"
+```
+
+Then open:
+
+```text
+http://localhost:5555
+```
+
+For this local Docker database, putting:
+
+```text
+postgresql://postgres:postgres@localhost:5432/nestdb
+```
+
+directly in the command is fine.
+
+For real/shared/production databases, don't put passwords directly in commands. Prefer an environment variable:
+
+```bash
+yarn dlx prisma@7.10.0 studio --url="$DATABASE_URL"
+```
+
+---
+
+# Quick DB Update Without Migration
+
+For temporary experimentation:
+
+```bash
 yarn prisma db update --dry-run
+```
+
+Then:
+
+```bash
 yarn prisma db update
 ```
 
-`db update` changes the database directly without creating a migration.
+This changes the database directly **without creating migration history**.
 
-Good for:
-
-- experiments
-- prototypes
-
-Prefer proper migrations for:
-
-- real project development
-- Git
-- team work
-- production
+Prefer proper migrations for real project development.
 
 ---
 
 # Completely Reset Local Database ⚠️
 
-This deletes **all PostgreSQL data** in the Docker volume:
+Deletes all PostgreSQL data:
 
 ```bash
 docker compose down -v
 docker compose up -d
 ```
 
-Then recreate the database from your migrations:
+Then recreate the DB from migrations:
 
 ```bash
 yarn prisma db migrate --advance-ref db
 ```
 
-Use this only when you intentionally want a clean database.
+Only use `down -v` when you intentionally want to delete your local database.
 
 ---
 
-# First-Time Database Bootstrap
-
-Without migration history:
+# Commands You'll Use Most
 
 ```bash
-yarn prisma contract emit
-yarn prisma db init
-```
-
-For a project where you want migration history, prefer:
-
-```bash
-yarn prisma contract emit
-yarn prisma migration plan --name init
-yarn prisma db migrate --advance-ref db
-```
-
----
-
-# Most Common Commands
-
-```bash
-# Start database
+# Start DB
 docker compose up -d
+
+# Generate Nest files
+nest g module auth
+nest g controller auth
+nest g service auth
 
 # After editing contract.prisma
 yarn prisma contract emit
@@ -228,15 +325,12 @@ yarn prisma migration plan --name my-change
 # Apply migration
 yarn prisma db migrate --advance-ref db
 
-# Check migrations
-yarn prisma migration status
-
-# Verify DB matches contract
+# Verify DB
 yarn prisma db verify
 
-# Stop DB, keep data
+# Stop DB but keep data
 docker compose down
 
-# DELETE local DB data ⚠️
+# ⚠️ Delete local DB completely
 docker compose down -v
 ```
