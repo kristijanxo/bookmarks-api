@@ -24,19 +24,23 @@ model User {
   id        Int     @id @default(autoincrement())
   email     String  @unique
   hash      String
-  firstName String?
-  lastName  String?
+  firstName String? @map('first_name')
+  lastName  String? @map('last_name')
 
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  createdAt TimestamptzString @default(now()) @map('created_at')
+  updatedAt temporal.updatedAtString() @map('updated_at')
+
+  @@map('users')
   }
 
 model Bookmark {
   id            Int       @id @default(autoincrement())
   title         String
-  descrtiption  String?
+  description   String?
   url           String
 
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  createdAt TimestamptzString @default(now()) @map('created_at')
+  updatedAt temporal.updatedAtString() @map('updated_at')
+
+  @@map('bookmarks')
   }
