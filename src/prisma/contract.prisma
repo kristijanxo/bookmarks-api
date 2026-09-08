@@ -26,6 +26,7 @@ model User {
   hash      String
   firstName String? @map('first_name')
   lastName  String? @map('last_name')
+  bookmarks Bookmark[]
 
   createdAt TimestamptzString @default(now()) @map('created_at')
   updatedAt temporal.updatedAtString() @map('updated_at')
@@ -39,8 +40,11 @@ model Bookmark {
   description   String?
   url           String
 
-  createdAt TimestamptzString @default(now()) @map('created_at')
-  updatedAt temporal.updatedAtString() @map('updated_at')
+  userId        Int       @map('user_id')
+  user          User      @relation(fields: [userId], references: [id])
+
+  createdAt     TimestamptzString @default(now()) @map('created_at')
+  updatedAt     temporal.updatedAtString() @map('updated_at')
 
   @@map('bookmarks')
   }
