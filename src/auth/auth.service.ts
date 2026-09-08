@@ -11,7 +11,13 @@ export class AuthService {
     const hash = await argon.hash(dto.password);
 
     // save the new user in db
-    const user = await this.database.db.orm.public.User.create({
+    const user = await this.database.db.orm.public.User.select(
+      'id',
+      'firstName',
+      'lastname',
+      'email',
+      'createdAt',
+    ).create({
       email: dto.email,
       hash,
     });
