@@ -125,7 +125,7 @@
                   "kind": "scalar"
                 }
               },
-              "lastname": {
+              "lastName": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -158,8 +158,8 @@
                 "id": {
                   "column": "id"
                 },
-                "lastname": {
-                  "column": "lastname"
+                "lastName": {
+                  "column": "lastName"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -263,7 +263,7 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "lastname": {
+                "lastName": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -295,7 +295,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "831331a430c674b93bcbeb0b18f984f482f263e31f8a60ab73ccd0b1df3c5c72"
+    "storageHash": "5f438d24e4ade1644c73046712bb0375c07f9fc35a66819779089d79e8304bbf"
   },
   "execution": {
     "executionHash": "26afe0aafffa2bdf32ac3f9acba1bf59ff10a8afd3408b7d1e98d7dc0a457bda",

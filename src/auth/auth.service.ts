@@ -14,7 +14,7 @@ export class AuthService {
     const user = await this.database.db.orm.public.User.select(
       'id',
       'firstName',
-      'lastname',
+      'lastName',
       'email',
       'createdAt',
     ).create({
