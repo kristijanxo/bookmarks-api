@@ -4,11 +4,11 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
-    "bookmark": {
+    "bookmarks": {
       "model": "Bookmark",
       "namespace": "public"
     },
-    "user": {
+    "users": {
       "model": "User",
       "namespace": "public"
     }
@@ -26,7 +26,7 @@
                   "kind": "scalar"
                 }
               },
-              "descrtiption": {
+              "description": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -60,16 +60,39 @@
                   "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
               }
             },
-            "relations": {},
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
             "storage": {
               "fields": {
                 "createdAt": {
-                  "column": "createdAt"
+                  "column": "created_at"
                 },
-                "descrtiption": {
-                  "column": "descrtiption"
+                "description": {
+                  "column": "description"
                 },
                 "id": {
                   "column": "id"
@@ -78,14 +101,17 @@
                   "column": "title"
                 },
                 "updatedAt": {
-                  "column": "updatedAt"
+                  "column": "updated_at"
                 },
                 "url": {
                   "column": "url"
+                },
+                "userId": {
+                  "column": "user_id"
                 }
               },
               "namespaceId": "public",
-              "table": "bookmark"
+              "table": "bookmarks"
             }
           },
           "User": {
@@ -140,17 +166,33 @@
                 }
               }
             },
-            "relations": {},
+            "relations": {
+              "bookmarks": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "Bookmark",
+                  "namespace": "public"
+                }
+              }
+            },
             "storage": {
               "fields": {
                 "createdAt": {
-                  "column": "createdAt"
+                  "column": "created_at"
                 },
                 "email": {
                   "column": "email"
                 },
                 "firstName": {
-                  "column": "firstName"
+                  "column": "first_name"
                 },
                 "hash": {
                   "column": "hash"
@@ -159,14 +201,14 @@
                   "column": "id"
                 },
                 "lastName": {
-                  "column": "lastName"
+                  "column": "last_name"
                 },
                 "updatedAt": {
-                  "column": "updatedAt"
+                  "column": "updated_at"
                 }
               },
               "namespaceId": "public",
-              "table": "user"
+              "table": "users"
             }
           }
         }
@@ -178,9 +220,9 @@
       "public": {
         "entries": {
           "table": {
-            "bookmark": {
+            "bookmarks": {
               "columns": {
-                "createdAt": {
+                "created_at": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
                     "expression": "now()",
@@ -189,7 +231,7 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
-                "descrtiption": {
+                "description": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -208,7 +250,7 @@
                   "nativeType": "text",
                   "nullable": false
                 },
-                "updatedAt": {
+                "updated_at": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": false
@@ -217,10 +259,41 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "user_id": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
                 }
               },
-              "foreignKeys": [],
-              "indexes": [],
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "user_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "bookmarks"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "user_id"
+                  ],
+                  "name": "bookmarks_user_id_idx_6c952402",
+                  "prefix": "bookmarks_user_id_idx",
+                  "unique": false
+                }
+              ],
               "primaryKey": {
                 "columns": [
                   "id"
@@ -228,9 +301,9 @@
               },
               "uniques": []
             },
-            "user": {
+            "users": {
               "columns": {
-                "createdAt": {
+                "created_at": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
                     "expression": "now()",
@@ -244,7 +317,7 @@
                   "nativeType": "text",
                   "nullable": false
                 },
-                "firstName": {
+                "first_name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -263,12 +336,12 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "lastName": {
+                "last_name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
-                "updatedAt": {
+                "updated_at": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": false
@@ -295,10 +368,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5f438d24e4ade1644c73046712bb0375c07f9fc35a66819779089d79e8304bbf"
+    "storageHash": "598cc6083c04a02381b28f11bc760356402d5ad21f2fa7be812c89aa408fc936"
   },
   "execution": {
-    "executionHash": "26afe0aafffa2bdf32ac3f9acba1bf59ff10a8afd3408b7d1e98d7dc0a457bda",
+    "executionHash": "fcf5a5d1f506e52dc454d21b3d6b73bd8a33aaeb27c135784df89ebcad1917e0",
     "mutations": {
       "defaults": [
         {
@@ -311,9 +384,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "updatedAt",
+            "column": "updated_at",
             "namespace": "public",
-            "table": "bookmark"
+            "table": "bookmarks"
           }
         },
         {
@@ -326,9 +399,9 @@
             "kind": "generator"
           },
           "ref": {
-            "column": "updatedAt",
+            "column": "updated_at",
             "namespace": "public",
-            "table": "user"
+            "table": "users"
           }
         }
       ]
