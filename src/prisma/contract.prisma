@@ -25,7 +25,7 @@ model User {
   email     String  @unique
   hash      String
   firstName String?
-  lastname  String?
+  lastName  String?
 
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
