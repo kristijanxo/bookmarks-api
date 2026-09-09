@@ -1,16 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { AuthDto } from './dto/auth.dto.js';
+import { ConflictException, Injectable } from '@nestjs/common';
 import * as argon from 'argon2';
 import { DatabaseService } from '../database/database.service.js';
+import { AuthDto } from './dto/index.js';
 
 @Injectable()
 export class AuthService {
   constructor(private database: DatabaseService) {}
+
   async signUp(dto: AuthDto) {
-    // generate the password hash
+    const existingUser = await this.database.db.orm.public.User.where(
+      { email: dto.email },
+    ).first();
+
+    if (existingUser) {
+      throw new ConflictException('Email is already in use');
+    }
+
     const hash = await argon.hash(dto.password);
 
-    // save the new user in db
     const user = await this.database.db.orm.public.User.select(
       'id',
       'firstName',
@@ -22,7 +29,6 @@ export class AuthService {
       hash,
     });
 
-    // return the saved user
     return user;
   }
 
