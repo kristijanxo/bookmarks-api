@@ -6,10 +6,16 @@ import {
 import * as argon from 'argon2';
 import { DatabaseService } from '../database/database.service.js';
 import { AuthDto } from './dto/index.js';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private database: DatabaseService) {}
+  constructor(
+    private database: DatabaseService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
 
   async signUp(dto: AuthDto) {
     const existingUser = await this.database.db.orm.public.User.where(
@@ -27,13 +33,7 @@ export class AuthService {
       hash,
     });
 
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      createdAt: user.createdAt,
-    };
+    return this.signToken(user.id, user.email);
   }
 
   async signIn(dto: AuthDto) {
@@ -55,13 +55,20 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    //send back user
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      createdAt: user.createdAt,
+    return this.signToken(user.id, user.email);
+  }
+
+  signToken(userId: number, email: string): Promise<string> {
+    const payload = {
+      sub: userId,
+      email,
     };
+
+    const secret = this.config.get('JWT_SECRET');
+
+    return this.jwt.signAsync(payload, {
+      expiresIn: '15m',
+      secret: secret,
+    });
   }
 }
